@@ -1,18 +1,7 @@
-aniso8601==9.0.1
-blinker==1.8.2
-click==8.1.7
-colorama==0.4.6
+J_core @ https://github.com/JSchwanse/j_core/releases/download/v0.0.1/J_Core-0.0.1-py3-none-any.whl
 Flask==3.0.2
 Flask-RESTful==0.3.10
-greenlet==3.0.3
-Jinja2==3.1.4
-MarkupSafe==2.1.5
 marshmallow==3.19.0
-packaging==24.1
-psycopg2==2.8.6
-psycopg2-binary==2.9.9
-pytz==2024.1
-setuptools==71.1.0
-six==1.16.0
 SQLAlchemy==2.0.28
-Werkzeug==3.0.3
+
+#-r test-requirements.txt

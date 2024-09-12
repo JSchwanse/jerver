@@ -1,16 +1,20 @@
-from typing import get_origin, get_args, TypeVar
+from typing import get_origin, get_args, TypeVar, Generic, Any
 
-from j_core.businessobject.BusinessObject import BusinessObject
 from sqlalchemy.orm import Session
 
+from j_core.businessobject.BusinessObject import BusinessObject
 from jerver.transaction.transactional import transactional
 
+__all__ = ['CoreCRUDService']
 
-class CoreCRUDService[BUSINESS_OBJECT_TYPE: BusinessObject]:
+BUSINESS_OBJECT_TYPE = TypeVar('BUSINESS_OBJECT_TYPE', bound=BusinessObject)
+
+
+class CoreCRUDService(Generic[BUSINESS_OBJECT_TYPE]):
     BUSINESS_OBJECT_TYPE_ARG: type[BUSINESS_OBJECT_TYPE]
 
     @classmethod
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: Any):
         super().__init_subclass__(**kwargs)
         for base in cls.__orig_bases__:  # type: ignore[attr-defined]
             origin = get_origin(base)
@@ -29,14 +33,14 @@ class CoreCRUDService[BUSINESS_OBJECT_TYPE: BusinessObject]:
         return result
 
     @transactional
-    def find(self, session: Session, filter_dict) -> list[BUSINESS_OBJECT_TYPE]:
+    def find(self, session: Session, filter_dict: dict[str, Any]) -> list[BUSINESS_OBJECT_TYPE]:
         result_list: list[BUSINESS_OBJECT_TYPE] = (
             session.query(self.BUSINESS_OBJECT_TYPE_ARG).filter_by(**filter_dict).all())
         for result in result_list:
             session.expunge(result)
         return result_list
 
-    @transactional(required=True)
+    @transactional(read_only=False, required=True)
     def save(self, session: Session, data_object: BUSINESS_OBJECT_TYPE) -> BUSINESS_OBJECT_TYPE:
         session.add(data_object)
         session.commit()
@@ -46,4 +50,4 @@ class CoreCRUDService[BUSINESS_OBJECT_TYPE: BusinessObject]:
 
     @transactional
     def delete(self, session: Session) -> bool:
-        pass
+        return False

@@ -1,2 +1,4 @@
 # exports
-from .CoreCRUDService import CoreCRUDService
+from .CoreCRUDService import *
+
+__all__ = ['CoreCRUDService']

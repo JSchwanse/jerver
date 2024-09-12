@@ -1,3 +1,6 @@
+__all__ = ['ElementNotFoundException', 'MissingDBConnectionException']
+
+
 class ElementNotFoundException(Exception):
     pass
 
