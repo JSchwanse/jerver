@@ -1,3 +1,5 @@
 # exports
-from .base_resource import BaseResource
-from .service import Service
+from .base_resource import *
+from .service import *
+
+__all__ = ['BaseResource', 'Service']

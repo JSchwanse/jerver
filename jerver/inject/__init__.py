@@ -1,3 +1,4 @@
 # exports
-from .injectable import injectable
-from .useInject import useInject
+from .inject import *
+
+__all__ = ['Registry', 'useInject', 'injectable']

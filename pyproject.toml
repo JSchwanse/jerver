@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Jerver"
+authors = [
+    { name = "jswa" },
+]
+description = "Python library to easyly create and maintain business object endpoints."
+requires-python = ">=3.12"
+#readme = "README.rst"
+#keywords = ["none", "nothing"]
+#license = {text = ""}
+classifiers = [
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content"
+]
+dependencies = [
+    "J_core @ https://github.com/JSchwanse/j_core/releases/download/v0.0.1/J_Core-0.0.1-py3-none-any.whl",
+    "Flask==3.0.2",
+    "Flask-RESTful==0.3.10",
+    "marshmallow==3.19.0",
+    "SQLAlchemy==2.0.28"
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+PG_DRIVER = ["psycopg2-binary"]
+test = ["Jester[PG_DRIVER] @ https://github.com/JSchwanse/jester/releases/download/v0.0.1/Jester-0.0.1-py3-none-any.whl"]
+mypy = ["types-Flask"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages]
+find = { }  # Scan the project directory with the default parameters
+
+[tool.setuptools.package-data]
+jerver = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = { attr = "jerver.__version__" }
