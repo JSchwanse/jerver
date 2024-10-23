@@ -13,6 +13,11 @@ data = {
             "strfield": "9876",
             "intfield": 9876,
             "foreign_field": 1234  # Relates to RELATED_TEST_BO with id == 1234
+        },
+        {
+            "id": 5555,
+            "strfield": "9876",
+            "intfield": 5555
         }
     ],
     RELATED_TEST_BO: [

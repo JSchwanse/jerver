@@ -1,15 +1,50 @@
 import inspect
 import json
-from typing import Any
+from typing import Any, Callable
 
 from flask import request, abort
 from marshmallow import Schema, fields
-from sqlalchemy.orm import Session
 
-from jerver.resources.base_resource import BaseResource
-from jerver.service.ServiceInterface import Registry
+from jerver.exceptions import EndpointNotFoundException
+from jerver.resources import BaseResource
+from jerver.service.ServiceInterface import Registry, SERVICE_PREFIX
 
 __all__ = ['Service']
+
+
+def extract_method_arguments(service_method: Callable[..., Any], data: bytes) -> dict[str, Any]:
+    service_method_signature = inspect.signature(service_method)
+    dict_data = json.loads(data)
+    # extract those arguments from data which reflect a method argument and parse it into a dict
+    arg_data = {}
+    for parameter in service_method_signature.parameters:
+        if parameter in ['self', 'session']:  # hard exclude
+            continue
+        if dict_data.get(parameter) is not None:
+            arg_data[parameter] = dict_data.get(parameter)
+
+    return arg_data
+
+
+def call_service(servicecall: str, *args: Any, **kwargs: Any) -> Any:
+    # extract service and method name and resolve the service
+    service_name = servicecall.split('.')[0]
+    method_name = servicecall.split('.')[1]
+
+    # resolve service interface
+    endpoint_name = f'{SERVICE_PREFIX}{service_name}'
+    service_interface = Registry.resolve(endpoint_name)
+    if service_interface is None:
+        raise EndpointNotFoundException(f'Could not find service endpoint: "{endpoint_name}"')
+    service = service_interface.cls
+    if service is None:
+        raise EndpointNotFoundException(f'Service interface "{endpoint_name}" is missing its class definition!')
+
+    # get and call the method
+    service_method: Callable[..., Any] = getattr(service, method_name)
+    if service_method is not None:
+        arg_data = extract_method_arguments(service_method, request.data)
+        return service_method(service, *args, **arg_data)
 
 
 class Service(BaseResource):
@@ -20,55 +55,28 @@ class Service(BaseResource):
         super().__init__(*args, **kwargs)
         self.schema = Service.ServiceCallSchema()
 
-    def extract_args_from_request_data(self, service_method: Any, data: bytes) -> dict[str, Any]:
-        service_method_signature = inspect.signature(service_method)
-        dict_data = json.loads(data)
-        # extract those arguments from data which reflect a method argument and parse it into a dict
-        arg_data = {}
-        for parameter in service_method_signature.parameters:
-            if parameter in ['self', 'session']:  # hard exclude
-                continue
-            if dict_data.get(parameter) is not None:
-                arg_data[parameter] = dict_data.get(parameter)
-
-        return arg_data
-
-    def call_service(self, servicecall: str, *args: Any, **kwargs: Any) -> Any:
-        # extract service and method name and resolve the service
-        service_name = servicecall.split('.')[0]
-        method_name = servicecall.split('.')[1]
-
-        service_interface = Registry.get(f'/service/{service_name}')
-        if service_interface is None:
-            # TODO: may be possible due to lazy loading: try to find and load the service
-            print('Service not found... too bad!')
-            return None
-        service = service_interface.cls
-        if service is None:
-            # TODO: may be possible due to lazy loading: try to find and load the service
-            print('Service not found... too bad!')
-            return None
-
-        # get and call the method
-        service_method = getattr(service, method_name)
-        if service_method is not None:
-            arg_data = self.extract_args_from_request_data(service_method, request.data)
-            return service_method(service, *args, **arg_data)
-
-    def do_get(self, *args: Any, session: Session, **kwargs: Any) -> Any:
+    def get(self, *args: Any, **kwargs: Any) -> Any:
         if errors := self.schema.validate(request.args):
             abort(400, str(errors))
-        # load users from db, whose username equals the passed name
-        # return session.query(BUser).filter(BUser.username == kwargs.get('username')).one()
-        return self.call_service(kwargs.pop('servicecall'), *args, **kwargs)
+        try:
+            return call_service(kwargs.pop('servicecall'), *args, **kwargs)
+        except EndpointNotFoundException as e:
+            return {'exception': e}, 404
+        except Exception as e:
+            return {'exception': e}, 500
 
-    def do_post(self, *args: Any, session: Session, **kwargs: Any) -> Any:
+    def post(self, *args: Any, **kwargs: Any) -> Any:
         if errors := self.schema.validate(request.args):
             abort(400, str(errors))
-        return self.call_service(kwargs.pop('servicecall'), *args, **kwargs)
+        try:
+            return call_service(kwargs.pop('servicecall'), *args, **kwargs)
+        except EndpointNotFoundException as e:
+            return {'exception': e}, 404
+        except Exception as e:
+            return {'exception': e}, 500
 
-    def do_put(self, *args: Any, session: Session, **kwargs: Any) -> Any:
+    def put(self, *args: Any, **kwargs: Any) -> Any:
         pass
 
-    def do_delete(self, *args: Any, session: Session, **kwargs: Any) -> Any:
+    def delete(self, *args: Any, **kwargs: Any) -> Any:
         pass

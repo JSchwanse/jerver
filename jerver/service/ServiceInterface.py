@@ -1,10 +1,12 @@
 from typing import TypeVar, Generic, Callable
 
-from jerver.inject import injectable
+from jerver.inject import injectable, DependencyRegistry
 
-__all__ = ['Registry', 'ServiceInterface', 'serviceinterface']
+__all__ = ['Registry', 'ServiceInterface', 'serviceinterface', 'SERVICE_PREFIX']
 
 CLS = TypeVar('CLS', bound=type)
+
+SERVICE_PREFIX = '/service/'
 
 
 class ServiceInterface(Generic[CLS]):
@@ -15,7 +17,7 @@ class ServiceInterface(Generic[CLS]):
         self.name = name
 
 
-Registry: dict[str, ServiceInterface[type]] = {}
+Registry = DependencyRegistry[ServiceInterface[type]]()
 
 
 def serviceinterface(name: str) -> Callable[[CLS], CLS]:
@@ -26,7 +28,8 @@ def serviceinterface(name: str) -> Callable[[CLS], CLS]:
     """
 
     def _serviceinterface(cls: CLS) -> CLS:
-        Registry[name] = ServiceInterface(cls, name)
+        servicename = f'{SERVICE_PREFIX}{name}'
+        Registry.register(servicename, ServiceInterface(cls, servicename))
         injectable(cls)
         return cls
 

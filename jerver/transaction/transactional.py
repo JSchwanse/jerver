@@ -70,16 +70,13 @@ def transactional(member_function: Optional[Callable[..., Any]] = None, /, **kwa
     :type requires_new: bool
     """
 
-    required = kwargs.get('required')
-    read_only = kwargs.get('read_only')
-    requires_new = kwargs.get('requires_new')
-    rollback_only = kwargs.get('rollback_only')
+    required = kwargs.get('required', False)
+    read_only = kwargs.get('read_only', False)
+    requires_new = kwargs.get('requires_new', False)
+    rollback_only = kwargs.get('rollback_only', False)
 
     wrapper_assignments = ('__module__', '__name__', '__qualname__', '__doc__', '__type_params__')
     wrapper_updates = ('__dict__',)
-
-    if inspect.ismethod(member_function) or inspect.isfunction(member_function):
-        return functools.wraps(member_function, wrapper_assignments, wrapper_updates)(bind_read_only(member_function))
 
     def _inner(func: Callable[..., Any]) -> Callable[..., Any]:
         if required is True:
@@ -89,5 +86,8 @@ def transactional(member_function: Optional[Callable[..., Any]] = None, /, **kwa
 
         # default
         return functools.wraps(func, wrapper_assignments, wrapper_updates)(bind_required(func))
+
+    if inspect.ismethod(member_function) or inspect.isfunction(member_function):
+        return _inner(member_function)
 
     return _inner

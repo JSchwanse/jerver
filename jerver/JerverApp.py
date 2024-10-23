@@ -11,6 +11,8 @@ from jerver.resources import Service
 
 __all__ = ['JSONEncoderBusinessObject', 'BusinessObjectJSONProvider', 'JerverApp']
 
+from jerver.service import SERVICE_PREFIX
+
 
 class JSONEncoderBusinessObject(JSONEncoder):
     def default(self, o: object) -> Any:
@@ -43,4 +45,4 @@ class JerverApp(Flask):
 
         # register endpoints
         api = Api(self)
-        api.add_resource(Service, '/service/<path:servicecall>', endpoint='/service')
+        api.add_resource(Service, f'{SERVICE_PREFIX}<path:servicecall>', endpoint='/service')

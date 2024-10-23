@@ -35,7 +35,11 @@ class CoreCRUDService(Generic[BUSINESS_OBJECT_TYPE]):
     @transactional
     def find(self, session: Session, filter_dict: dict[str, Any]) -> list[BUSINESS_OBJECT_TYPE]:
         result_list: list[BUSINESS_OBJECT_TYPE] = (
-            session.query(self.BUSINESS_OBJECT_TYPE_ARG).filter_by(**filter_dict).all())
+            session
+            .query(self.BUSINESS_OBJECT_TYPE_ARG)
+            .filter_by(**filter_dict)
+            .order_by('id')  # hardcoded for now, will be adjustable later
+            .all())
         for result in result_list:
             session.expunge(result)
         return result_list
@@ -49,5 +53,8 @@ class CoreCRUDService(Generic[BUSINESS_OBJECT_TYPE]):
         return data_object
 
     @transactional
-    def delete(self, session: Session) -> bool:
-        return False
+    def delete(self, session: Session, data_object: BUSINESS_OBJECT_TYPE) -> bool:
+        session.delete(data_object)
+        is_deleted = data_object in session.deleted
+        session.commit()
+        return is_deleted

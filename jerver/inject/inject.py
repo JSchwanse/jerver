@@ -1,15 +1,17 @@
 import inspect
-from typing import Callable, Type, TypeVar
+from typing import Callable, Type, TypeVar, Any
+
+from jerver.inject import DependencyRegistry
 
 __all__ = ['Registry', 'useInject', 'injectable']
 
-T = TypeVar('T', bound=object)
+T = TypeVar('T')
 
-Registry: dict[str, T] = {}  # type: ignore[valid-type]
+Registry = DependencyRegistry[Any]()
 
 
-def useInject(cls: Type[T]) -> T:
-    return Registry[cls.__name__]
+def useInject(cls: Type[T]) -> Any:
+    return Registry.resolve(cls.__name__)
 
 
 def injectable(class_or_name: Type[T] | str) -> Callable[[Type[T]], None] | None:
@@ -17,11 +19,11 @@ def injectable(class_or_name: Type[T] | str) -> Callable[[Type[T]], None] | None
     if inspect.isclass(class_or_name):
         # call constructor and register instance
         # TODO: resolve and use other injectables as constructor arguments
-        Registry[class_or_name.__name__] = class_or_name()
+        Registry.register(class_or_name.__name__, class_or_name())
     elif isinstance(class_or_name, str):
         def _injectable(cls: Type[T]) -> None:
             # TODO: resolve and use other injectables as constructor arguments
-            Registry[cls.__name__] = cls()
+            Registry.register(cls.__name__, cls())
 
         return _injectable
 

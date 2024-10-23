@@ -1,4 +1,4 @@
 # exports
 from .exceptions import *
 
-__all__ = ['ElementNotFoundException', 'MissingDBConnectionException']
+__all__ = ['ResourceException', 'EndpointNotFoundException', 'MissingDBConnectionException']

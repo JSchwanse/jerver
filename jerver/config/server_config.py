@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 from xml.etree import ElementTree
 
 __all__ = ['ApiServerConfig', 'ClientServerConfig', 'ServerConfiguration']
@@ -53,7 +53,7 @@ class ServerConfiguration:
             name = str(api_tag.get('name'))
             port = None
             if api_tag.get('port') is not None:
-                port = cast(int, api_tag.get('port'))
+                port = int(api_tag.get('port', 0))
             api_config = {
                 'name': name,
                 'port': port,
@@ -67,7 +67,7 @@ class ServerConfiguration:
             name = str(client_tag.get('name'))
             port = None
             if client_tag.get('port') is not None:
-                port = cast(int, client_tag.get('port'))
+                port = int(client_tag.get('port', 0))
             client_config = {
                 'name': name,
                 'port': port,
