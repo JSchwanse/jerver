@@ -1,3 +1,4 @@
+import functools
 import inspect
 import json
 from typing import Any, Callable
@@ -12,8 +13,13 @@ from jerver.service.ServiceInterface import Registry, SERVICE_PREFIX
 __all__ = ['Service']
 
 
+@functools.lru_cache(maxsize=250)
+def get_method_signature(service_method: Callable[..., Any]) -> inspect.Signature:
+    return inspect.signature(service_method)
+
+
 def extract_method_arguments(service_method: Callable[..., Any], data: bytes) -> dict[str, Any]:
-    service_method_signature = inspect.signature(service_method)
+    service_method_signature = get_method_signature(service_method)
     dict_data = json.loads(data)
     # extract those arguments from data which reflect a method argument and parse it into a dict
     arg_data = {}
