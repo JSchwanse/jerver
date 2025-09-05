@@ -18,6 +18,8 @@ def get_method_signature(service_method: Callable[..., Any]) -> inspect.Signatur
     return inspect.signature(service_method)
 
 
+# Using Any as a return type on purpose here.
+# We don't want to impose restrictions on what you want to return in your Service.
 def extract_method_arguments(service_method: Callable[..., Any], data: bytes) -> dict[str, Any]:
     service_method_signature = get_method_signature(service_method)
     dict_data = json.loads(data)
