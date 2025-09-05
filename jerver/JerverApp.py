@@ -1,22 +1,28 @@
 import json
 from json import JSONEncoder
+from typing import Any
 
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_restful import Api
-from j_core.businessobject.BusinessObject import BusinessObject
 
+from j_core.businessobject.BusinessObject import BusinessObject
 from jerver.resources import Service
+
+__all__ = ['JSONEncoderBusinessObject', 'BusinessObjectJSONProvider', 'JerverApp']
+
+from jerver.service import SERVICE_PREFIX
 
 
 class JSONEncoderBusinessObject(JSONEncoder):
-    def default(self, o):
+    def default(self, o: object) -> Any:
         if isinstance(o, BusinessObject):
             return o.to_dictionary()
+        return None
 
 
 class BusinessObjectJSONProvider(DefaultJSONProvider):
-    def dumps(self, obj, **kwargs):
+    def dumps(self, obj: Any, **kwargs: Any) -> str:
         if isinstance(obj, BusinessObject):
             return json.dumps(obj, **kwargs, cls=JSONEncoderBusinessObject)
         else:
@@ -27,7 +33,7 @@ class BusinessObjectJSONProvider(DefaultJSONProvider):
 
 
 class JerverApp(Flask):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 
         # register custom json parser for business objects
@@ -39,4 +45,4 @@ class JerverApp(Flask):
 
         # register endpoints
         api = Api(self)
-        api.add_resource(Service, '/service/<path:servicecall>', endpoint='/service')
+        api.add_resource(Service, f'{SERVICE_PREFIX}<path:servicecall>', endpoint='/service')

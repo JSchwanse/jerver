@@ -1,4 +1,11 @@
-class ElementNotFoundException(Exception):
+__all__ = ['ResourceException', 'EndpointNotFoundException', 'MissingDBConnectionException']
+
+
+class ResourceException(Exception):
+    pass
+
+
+class EndpointNotFoundException(ResourceException):
     pass
 
 

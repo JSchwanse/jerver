@@ -1,4 +1,4 @@
 # exports
-from .server_config import ApiServerConfig
-from .server_config import ClientServerConfig
-from .server_config import ServerConfiguration
+from .server_config import *
+
+__all__ = ['ApiServerConfig', 'ServerConfiguration', 'ClientServerConfig']

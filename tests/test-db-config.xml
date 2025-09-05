@@ -1,0 +1,25 @@
+<DbConfig>
+
+    <Alias name="test" connection="localConnectionPostgreTest"/>
+
+    <Connection name="localConnectionPostgreTest" driver="postgresql">
+        <Property name="user" value="postgres"/>
+        <Property name="password" value="postgres"/>
+        <Property name="dbName" value="testdb"/>
+        <Property name="host" value="localhost"/>
+        <Property name="port" value="5432"/>
+        <Property name="dialect" value="psycopg2"/>
+        <Property name="schema" value="public"/>
+    </Connection>
+
+    <Connection name="localConnectionMemory" driver="sqlite">
+        <Property name="user" value="sa"/>
+        <Property name="password" value=""/>
+        <Property name="host" value="localhost"/>
+        <Property name="port" value="9092"/>
+        <Property name="dbName" value="testdb"/>
+        <Property name="dialect" value="..."/>
+        <Property name="schema" value="PUBLIC"/>
+    </Connection>
+
+</DbConfig>

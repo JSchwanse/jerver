@@ -1,68 +1,29 @@
+from abc import abstractmethod
+from typing import Any, ParamSpec, Tuple
+
 from flask_restful import Resource
-from j_core.Runtime import Runtime
-from j_core.businessobject.BusinessObject import BusinessObject
-from sqlalchemy.orm.exc import NoResultFound
+
+__all__ = ['BaseResource']
 
 
 class BaseResource(Resource):
+    P = ParamSpec('P')
 
-    def get(self, *args, **kwargs):
-        session = Runtime.Session()
-        try:
-            result = self.do_get(*args, session=session, **kwargs)
-            session.commit()
-            return result.to_dictionary(), 200
-        except NoResultFound:
-            session.rollback()
-            return self.__class__.__name__ + ' not found', 404
-        except Exception as e:
-            session.rollback()
-            raise
-        finally:
-            session.close()
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__()
 
-    def post(self, *args, **kwargs):
-        session = Runtime.Session()
-        try:
-            result = self.do_post(*args, session=session, **kwargs)
-            session.commit()
-            return result, 200
-        except Exception as e:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
-    def put(self, *args, **kwargs):
-        session = Runtime.Session()
-        try:
-            self.do_put(*args, session=session, **kwargs)
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
-    def delete(self, *args, **kwargs):
-        session = Runtime.Session()
-        try:
-            self.do_delete(*args, session=session, **kwargs)
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
-    def do_get(self, *args, session, **kwargs) -> BusinessObject:
+    @abstractmethod
+    def get(self, *args: P.args, **kwargs: P.kwargs) -> Tuple[Any, int]:
         pass
 
-    def do_post(self, *args, session, **kwargs):
+    @abstractmethod
+    def post(self, *args: P.args, **kwargs: P.kwargs) -> Tuple[Any, int]:
         pass
 
-    def do_put(self, *args, session, **kwargs):
+    @abstractmethod
+    def put(self, *args: P.args, **kwargs: P.kwargs) -> Tuple[Any, int]:
         pass
 
-    def do_delete(self, *args, session, **kwargs):
+    @abstractmethod
+    def delete(self, *args: P.args, **kwargs: P.kwargs) -> Tuple[Any, int]:
         pass
